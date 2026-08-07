@@ -1,40 +1,49 @@
 #include <Arduino.h>
 #include <WiFi.h>
+#include <PubSubClient.h>
 
 float getTemperature();
 float getHumidity();
 float getLuminosity();
+void verifyAndConnect();
 
 // variáveis para conexão WiFi (nome da rede e senha) -> pegar wifi e senha a partir da aplicacao web depois? por seguranca
 String ssid;
 String pswd;
 
+// dados do broker mqtt
+const char *mqtt_broker = "0892fa44f5e445fea74c933892517dea.s1.eu.hivemq.cloud";
+const int mqtt_port = 8883;
+// credenciais do dispositivo
+const char *mqtt_username = "VTX01";
+const char *mqtt_pswd = "vortexiot";
+
 void setup()
 {
   // inicializando a comunicação serial
   Serial.begin(115200);
+  // setando tempo para esperar por dados no serial port
+  Serial.setTimeout(20000);
 
-  // recebendo o nome da rede e a senha do wifi através do monitor serial (temporario?)
+  // recebendo o nome da rede e a senha do wifi através do terminal serial (temporario?)
   Serial.println("Insira o nome da rede Wifi: ");
-  if (Serial.available())
-  {
-    ssid = Serial.readStringUntil('\n');
-  }
+  ssid = Serial.readStringUntil('\n');
+  ssid.trim();
+
   Serial.println("Insira a senha da rede Wifi: ");
-  if (Serial.available())
-  {
-    pswd = Serial.readStringUntil('\n');
-  }
+  pswd = Serial.readStringUntil('\n');
+  pswd.trim();
 
   // inicializando a comunicação wifi
   WiFi.begin(ssid, pswd);
   // aguardando a conexão para continuar o programa
+  Serial.print("Conectando com a rede WiFi");
   while (WiFi.status() != WL_CONNECTED)
   {
-    delay(300);
-    Serial.println("Conectando com a rede WiFi...");
+    delay(500);
+    Serial.print(".");
   }
-  Serial.println("Conectado à rede Wifi.");
+  Serial.println("\nConectado à rede Wifi.");
 }
 
 void loop()
@@ -43,12 +52,13 @@ void loop()
   if (WiFi.status() == WL_CONNECTION_LOST)
   {
     // tentando reconectar
+    Serial.print("Conexão com rede WiFi perdida. Tentando reconectar");
+    WiFi.begin(ssid, pswd);
     while (WiFi.status() != WL_CONNECTED)
     {
-      WiFi.begin(ssid, pswd);
-      Serial.println("Conexão com a rede WiFi perdida. Tentando reconectar...");
+      Serial.print(".");
     }
-    Serial.println("Reconectado à rede Wifi.");
+    Serial.println("\nReconectado à rede Wifi.");
   }
 }
 
