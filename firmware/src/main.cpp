@@ -1,16 +1,12 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
-
-void connectBroker();
-void reconnectBroker();
-float getTemperature();
-float getHumidity();
-float getLuminosity();
+#include <ezTime.h>
+#include <ArduinoJson.h>
 
 // variáveis para conexão WiFi (nome da rede e senha) -> pegar wifi e senha a partir da aplicacao web depois? por seguranca
-String ssid;
-String pswd;
+String ssid = "";
+String pswd = "";
 
 // dados do broker mqtt
 const char *mqtt_broker = "broker.emqx.io";
@@ -18,6 +14,22 @@ const int mqtt_port = 1883;
 // criando um client para a comunicação mqtt
 WiFiClient esp_client;
 PubSubClient client(esp_client);
+// tópico mqtt
+const char *topic = "vortex-iot/esp32-VTX01";
+
+// criando variável para armazenar o timestamp
+String timestamp;
+// criando variável para definir a timezone
+Timezone brasil;
+// momento desde a última atualização do dashboard desde o início do funcionamento do dispositivo
+unsigned long last_update_time = 0;
+
+void connectBroker();
+void reconnectBroker();
+float getTemperature();
+float getHumidity();
+float getLuminosity();
+void update();
 
 void setup()
 {
@@ -47,6 +59,11 @@ void setup()
   Serial.println("\nConectado à rede Wifi.");
 
   connectBroker();
+
+  // sincronizando o tempo
+  waitForSync();
+  // definindo a timezone
+  brasil.setLocation("America/Fortaleza");
 }
 
 void loop()
@@ -65,6 +82,16 @@ void loop()
   }
 
   reconnectBroker();
+  client.loop();
+
+  // tempo desde o início do programa
+  unsigned long now = millis();
+  if (last_update_time == 0 || now - last_update_time >= 1800000)
+  {
+    // atualizando o valor momento de update do dashboard para fazer um novo update
+    last_update_time = now;
+    update();
+  }
 }
 
 // função para conectar ao broker mqtt
@@ -99,7 +126,6 @@ void reconnectBroker()
     Serial.println("Conexão com o broker MQTT perdida. Tentando reconectar...");
     connectBroker();
   }
-  client.loop();
 }
 
 // função para gerar um valor de temperatura
@@ -123,4 +149,33 @@ float getLuminosity()
 {
   // gerando um valor aleatório até 1024 (exclusivo) para representar o valor medido pelo sensor LDR
   return random(1024);
+}
+
+// função que envia os dados atualizados
+void update()
+{
+  // pegando os valores dos sensores e o timestamp
+  float temperature = getTemperature();
+  float humidity = getHumidity();
+  float luminosity = getLuminosity();
+  timestamp = brasil.dateTime();
+
+  // string para enviar o payload
+  String payload;
+
+  // documento json para organizar os dados
+  JsonDocument doc;
+
+  // definindo os campos
+  doc["device"] = "VTX01";
+  doc["temperature"] = temperature;
+  doc["humidity"] = humidity;
+  doc["luminosity"] = luminosity;
+  doc["timestamp"] = timestamp;
+
+  // serializando o json para envio
+  serializeJson(doc, payload);
+
+  // enviando via mqtt
+  client.publish(topic, payload.c_str());
 }
