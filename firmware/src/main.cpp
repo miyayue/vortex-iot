@@ -3,6 +3,7 @@
 #include <PubSubClient.h>
 #include <ezTime.h>
 #include <ArduinoJson.h>
+#include <HTTPClient.h>
 
 // variáveis para conexão WiFi (nome da rede e senha) -> pegar wifi e senha a partir da aplicacao web depois? por seguranca
 String ssid = "";
@@ -16,6 +17,13 @@ WiFiClient esp_client;
 PubSubClient client(esp_client);
 // tópico mqtt
 const char *topic = "vortex-iot/esp32-VTX01";
+
+// ip para a aplicação web
+String addr = "";
+// caminho para fazer o post
+String server_name = "http://";
+// criando um client http
+HTTPClient http;
 
 // criando variável para armazenar o timestamp
 String timestamp;
@@ -45,7 +53,13 @@ void setup()
 
   Serial.println("Insira a senha da rede Wifi: ");
   pswd = Serial.readStringUntil('\n');
-  pswd.trim();*/
+  pswd.trim();
+
+  Serial.println("Insira o endereço IP para o dashboard (formato IP:port): ");
+  addr = Serial.readStringUntil('\n');
+  addr.trim();
+
+  */
 
   // inicializando a comunicação wifi
   WiFi.begin(ssid, pswd);
@@ -59,6 +73,13 @@ void setup()
   Serial.println("\nConectado à rede Wifi.");
 
   connectBroker();
+
+  // adicionando a rota
+  addr.concat("/measurements");
+  // completando a url
+  server_name.concat(addr);
+  // conexão http
+  http.begin(esp_client, server_name);
 
   // sincronizando o tempo
   waitForSync();
@@ -178,4 +199,10 @@ void update()
 
   // enviando via mqtt
   client.publish(topic, payload.c_str());
+
+  // enviando via http
+  http.addHeader("Content-Type", "application/json");
+  int http_response_code = http.POST(payload);
+  Serial.print("Response code: ");
+  Serial.println(http_response_code);
 }
