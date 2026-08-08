@@ -5,7 +5,7 @@
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
 
-// variáveis para conexão WiFi (nome da rede e senha) -> pegar wifi e senha a partir da aplicacao web depois? por seguranca
+// variáveis para conexão WiFi (nome da rede e senha)
 String ssid = "";
 String pswd = "";
 
@@ -46,7 +46,7 @@ void setup()
   // setando tempo para esperar por dados no serial port
   Serial.setTimeout(20000);
 
-  // recebendo o nome da rede e a senha do wifi através do terminal serial (temporario?)
+  // recebendo o nome da rede e a senha do wifi através do terminal serial
   /*Serial.println("Insira o nome da rede Wifi: ");
   ssid = Serial.readStringUntil('\n');
   ssid.trim();
