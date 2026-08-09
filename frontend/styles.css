@@ -1,0 +1,66 @@
+html {
+    background-color: #afa8f5;
+}
+
+body {
+    width: 1300px;
+    margin: 1% auto;
+    background-color: #f9f6ff;
+    padding: 0 20px 20px 20px;
+    box-shadow: 5px 5px 10px #5a4f96;
+    border-radius: 30px;
+}
+
+header {
+    height: 10vh;
+}
+
+h1 {
+    font-size: 60px;
+    text-align: center;
+    font-family: "Ubuntu";
+    margin: 0;
+    padding: 20px 0;
+    color: #321477;
+}
+
+label {
+    font-family: "Ubuntu", Helvetica, Arial, sans-serif;
+    font-weight: bold;
+    color: #2a0a5a;
+    width: 165px;
+}
+
+#main {
+    height: 90vh;
+}
+
+#configs {
+    height: 20%;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+#measurements {
+    height: 80%;
+}
+
+.measurement {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    background-color: #b4aeeebb;
+    padding: 5px;
+    box-shadow: 3px 3px 5px #665f8b;
+    border-radius: 20px;
+    margin: 10px;
+}
+
+.property * {
+    margin: 5px;
+}

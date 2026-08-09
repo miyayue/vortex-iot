@@ -1,7 +1,7 @@
 from flask import Flask, request
 import json
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path="", static_folder="../frontend")
 
 # classe com as medidas
 class Measurement:
@@ -16,14 +16,17 @@ per_device_measurements: dict[str, list[Measurement]] = {}
 # histórico geral de medidas 
 measurements: list[tuple[str, Measurement]] = []
 
-# rota para a home da aplicação 
-@app.route("/")
-def route_index():
-    return "index page"
+@app.route('/')
+def index():
+    return app.send_static_file("index.html")
 
-# rota para a página de dispositivos
+@app.route('/<path:path>')
+def static_file(path):
+    return app.send_static_file(path)
+
+# rota para listar dispositivos
 @app.route("/devices")
-def route_show_devices():
+def route_list_devices():
     global per_device_measurements
     devices = []
 
@@ -31,18 +34,22 @@ def route_show_devices():
     for key in per_device_measurements.keys():
         devices.append(key)
 
-    # serializando os dispositivos
-    json_devices = json.dumps({"devices": devices})
-    return json_devices
+    return devices
 
-# rota para a página do dispositivo com o id especificado
+# rota para listar as medidas de um dispositivo
 @app.route("/devices/<device>")
-def route_show_device(device):
+def route_device_measurements(device):
     global per_device_measurements
 
+    device_history = []
+    device_measurements = per_device_measurements.get(device, [])
+    for measurement in device_measurements:
+        data_dict = {"device": device, "temperature": measurement.temperature, "humidity": measurement.humidity, "luminosity": measurement.luminosity, "timestamp": measurement.timestamp}
+        device_history.append(data_dict)
+
     # pegando e serializando as medidas enviadas pelo dispositivo desejado
-    json_measurements = json.dumps(per_device_measurements.get(device), default=lambda o: o.__dict__, indent=4)
-    return json_measurements
+    json_data = json.dumps(device_history)
+    return json_data
 
 # rota de medidas
 @app.route("/measurements", methods=["GET", "POST"])
