@@ -44,7 +44,7 @@ void setup()
   // inicializando a comunicação serial
   Serial.begin(115200);
   // setando tempo para esperar por dados no serial port
-  Serial.setTimeout(20000);
+  Serial.setTimeout(1200000);
 
   // recebendo o nome da rede e a senha do wifi através do terminal serial
   Serial.println("Insira o nome da rede Wifi: ");
