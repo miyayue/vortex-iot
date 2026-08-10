@@ -55,7 +55,7 @@ void setup()
   pswd = Serial.readStringUntil('\n');
   pswd.trim();
 
-  Serial.println("Insira o endereço IP para o dashboard (formato IP:port): ");
+  Serial.println("Insira o endereço IP do servidor: ");
   addr = Serial.readStringUntil('\n');
   addr.trim();
 
@@ -73,7 +73,7 @@ void setup()
   connectBroker();
 
   // adicionando a rota
-  addr.concat("/measurements");
+  addr.concat(":5000/measurements");
   // completando a url
   server_name.concat(addr);
   // conexão http
