@@ -179,7 +179,7 @@ void update()
   float temperature = getTemperature();
   float humidity = getHumidity();
   float luminosity = getLuminosity();
-  timestamp = brasil.dateTime();
+  timestamp = brasil.dateTime(ISO8601);
 
   // string para enviar o payload
   String payload;

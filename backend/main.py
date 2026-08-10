@@ -16,6 +16,31 @@ per_device_measurements: dict[str, list[Measurement]] = {}
 # histórico geral de medidas 
 measurements: list[tuple[str, Measurement]] = []
 
+try:
+    # tentando abrir o arquivo com os dados salvos
+    with open("database", 'r') as file:
+        # lendo as medidas 
+            for data_dict in json.loads(file.read()):
+                # identificando o dispositivo
+                device = data_dict.pop("device")
+                # transformando o restante do dicionário em um objeto Measurement
+                measurement = Measurement(**data_dict)
+
+                # adicionando as medidas ao histórico do dispositivo
+                if device in per_device_measurements:
+                    per_device_measurements.get(device, []).append(measurement)
+                else:
+                    per_device_measurements.update({device: [measurement]})
+
+                # adicionando as medidas ao histórico geral de medidas do sistema
+                measurements.append((device, measurement))
+except FileNotFoundError: 
+    # criando o arquivo caso ainda não exista
+    file = open("database", "x")
+    file.close()
+
+
+# rota da página principal
 @app.route('/')
 def index():
     return app.send_static_file("index.html")
@@ -41,13 +66,15 @@ def route_list_devices():
 def route_device_measurements(device):
     global per_device_measurements
 
+    # pegando todas as medidas para o dispositivo solicitado
     device_history = []
     device_measurements = per_device_measurements.get(device, [])
     for measurement in device_measurements:
+        # transformando em dicionário e colocando no histórico do dispositivo
         data_dict = {"device": device, "temperature": measurement.temperature, "humidity": measurement.humidity, "luminosity": measurement.luminosity, "timestamp": measurement.timestamp}
         device_history.append(data_dict)
 
-    # pegando e serializando as medidas enviadas pelo dispositivo desejado
+    # serializando as medidas enviadas pelo dispositivo desejado
     json_data = json.dumps(device_history)
     return json_data
 
@@ -74,19 +101,24 @@ def route_measurements():
         # adicionando as novas medidas ao histórico geral de medidas do sistema
         measurements.append((device, new_measurements))
 
+        file = open("database", "w")
+        file.write(measurement_history(measurements))
+
         return dict()
     else:
-        # lista para guardar os dicionários de cada medida
-        measurements_history_list = []
+        return measurement_history(measurements)
 
-        for (device, measurement) in measurements:
-            # organiza os dados em um dicionário
-            data_dict = {"device": device, "temperature": measurement.temperature, "humidity": measurement.humidity, "luminosity": measurement.luminosity, "timestamp": measurement.timestamp}
-            # adiciona na lista
-            measurements_history_list.append(data_dict)
+def measurement_history(measurements):
+    # lista para guardar os dicionários de cada medida
+    measurements_history_list = []
 
-        # serializa o json para enviar os dados requisitados como resposta
-        json_data = json.dumps(measurements_history_list)
-        return json_data
+    for (device, measurement) in measurements:
+        # organiza os dados em um dicionário
+        data_dict = {"device": device, "temperature": measurement.temperature, "humidity": measurement.humidity, "luminosity": measurement.luminosity, "timestamp": measurement.timestamp}
+        # adiciona na lista
+        measurements_history_list.append(data_dict)
+
+    # serializa o json para enviar os dados requisitados como resposta
+    return json.dumps(measurements_history_list)
 
 app.run(host="0.0.0.0", port = 5000)
