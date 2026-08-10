@@ -76,8 +76,6 @@ void setup()
   addr.concat(":5000/measurements");
   // completando a url
   server_name.concat(addr);
-  // conexão http
-  http.begin(esp_client, server_name);
 
   // sincronizando o tempo
   waitForSync();
@@ -198,9 +196,13 @@ void update()
   // enviando via mqtt
   client.publish(topic, payload.c_str());
 
+  // conexão http
+  http.begin(esp_client, server_name);
   // enviando via http
   http.addHeader("Content-Type", "application/json");
   int http_response_code = http.POST(payload);
+  http.end();
+
   Serial.print("Response code: ");
   Serial.println(http_response_code);
 }
