@@ -47,7 +47,7 @@ void setup()
   Serial.setTimeout(20000);
 
   // recebendo o nome da rede e a senha do wifi através do terminal serial
-  /*Serial.println("Insira o nome da rede Wifi: ");
+  Serial.println("Insira o nome da rede Wifi: ");
   ssid = Serial.readStringUntil('\n');
   ssid.trim();
 
@@ -58,8 +58,6 @@ void setup()
   Serial.println("Insira o endereço IP para o dashboard (formato IP:port): ");
   addr = Serial.readStringUntil('\n');
   addr.trim();
-
-  */
 
   // inicializando a comunicação wifi
   WiFi.begin(ssid, pswd);
@@ -107,7 +105,7 @@ void loop()
 
   // tempo desde o início do programa
   unsigned long now = millis();
-  if (last_update_time == 0 || now - last_update_time >= 1800000)
+  if (last_update_time == 0 || now - last_update_time >= 300000)
   {
     // atualizando o valor momento de update do dashboard para fazer um novo update
     last_update_time = now;
