@@ -45,10 +45,6 @@ except FileNotFoundError:
 def index():
     return app.send_static_file("index.html")
 
-@app.route('/<path:path>')
-def static_file(path):
-    return app.send_static_file(path)
-
 # rota para listar dispositivos
 @app.route("/devices")
 def route_list_devices():
