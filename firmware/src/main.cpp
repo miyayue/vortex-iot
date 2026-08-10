@@ -22,8 +22,6 @@ const char *topic = "vortex-iot/esp32-VTX01";
 String addr = "";
 // caminho para fazer o post
 String server_name = "http://";
-// criando um client http
-HTTPClient http;
 
 // criando variável para armazenar o timestamp
 String timestamp;
@@ -196,6 +194,8 @@ void update()
   // enviando via mqtt
   client.publish(topic, payload.c_str());
 
+  // criando um client http
+  HTTPClient http;
   // conexão http
   http.begin(esp_client, server_name);
   // enviando via http
